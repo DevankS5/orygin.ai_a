@@ -6,7 +6,7 @@ import CallToAction from "@/components/call-to-action";
 import FooterSection from "@/components/footer";
 import FeaturesSection from "@/components/features-section";
 // import { div } from "framer-motion/client";
-// import Image from "next/image";
+// import Image from "next/image"; 
 
 export default function Home() {
   return( 
