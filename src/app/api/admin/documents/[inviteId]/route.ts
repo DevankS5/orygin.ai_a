@@ -5,9 +5,12 @@ import { cookies } from 'next/headers';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { inviteId: string } }
+  context: { params: Promise<{ inviteId: string }> }
 ) {
   try {
+    // Await the params since they're now a Promise in Next.js 15
+    const params = await context.params;
+    
     // Create authenticated Supabase client for session verification
     const cookieStore = await cookies();
     const authSupabase = createServerClient(

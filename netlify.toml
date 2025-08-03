@@ -6,6 +6,16 @@
   NODE_VERSION = "18.20.4"
   NPM_VERSION = "10.8.1"
 
+# Enable Next.js plugin
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Handle dynamic routes and API routes
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

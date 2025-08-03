@@ -3,9 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { inviteId: string } }
+  context: { params: Promise<{ inviteId: string }> }
 ) {
   try {
+    // Await the params since they're now a Promise in Next.js 15
+    const params = await context.params;
+    
     // Create Supabase client with service role for admin operations
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,

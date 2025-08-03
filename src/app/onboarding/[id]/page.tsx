@@ -3,10 +3,13 @@ import { notFound } from 'next/navigation';
 import OnboardingFlow from './OnboardingFlow';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function OnboardingPage({ params }: Props) {
+  // Await the params since they're now a Promise in Next.js 15
+  const { id } = await params;
+  
   // Create Supabase client with service role for server-side data fetching
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,12 +20,12 @@ export default async function OnboardingPage({ params }: Props) {
   const { data: invite, error } = await supabase
     .from('orientation_invites')
     .select('id, name, email, status, created_at')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   // Handle not found case
   if (error || !invite) {
-    console.error('Invite not found:', params.id, error);
+    console.error('Invite not found:', id, error);
     notFound();
   }
 
@@ -83,7 +86,7 @@ export default async function OnboardingPage({ params }: Props) {
           </div>
 
           {/* Main Onboarding Flow */}
-          <OnboardingFlow inviteId={params.id} userName={invite.name} />
+          <OnboardingFlow inviteId={id} userName={invite.name} />
         </div>
       </div>
     </div>
