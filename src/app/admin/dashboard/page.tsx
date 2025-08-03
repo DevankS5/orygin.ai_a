@@ -74,6 +74,10 @@ export default function AdminDashboard() {
   const [documentError, setDocumentError] = useState<string | null>(null);
   const [documentSuccess, setDocumentSuccess] = useState<string | null>(null);
 
+  // Debug state
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
+  const [debugLoading, setDebugLoading] = useState(false);
+
   // Check authentication on component mount
   useEffect(() => {
     checkAuthentication();
@@ -134,13 +138,23 @@ export default function AdminDashboard() {
   const fetchInvites = async () => {
     try {
       setInvitesLoading(true);
+      setInviteError('');
       console.log('Fetching invites...');
       
-      const response = await fetch('/api/admin/invites');
+      const response = await fetch('/api/admin/invites', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+      });
       console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Response error text:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
       
       const data = await response.json();
@@ -156,7 +170,8 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error fetching invites:', error);
-      setInviteError('Network error while fetching invites');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setInviteError(`Network error while fetching invites: ${errorMessage}`);
     } finally {
       setInvitesLoading(false);
     }
@@ -184,6 +199,49 @@ export default function AdminDashboard() {
       setDocuments([]);
     } finally {
       setDocumentsLoading(false);
+    }
+  };
+
+  const testHealthCheck = async () => {
+    try {
+      setDebugLoading(true);
+      setDebugInfo('Testing API health...');
+      
+      const response = await fetch('/api/health', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+      });
+
+      const responseText = await response.text();
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        data = { rawResponse: responseText };
+      }
+
+      const debugResult = {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        data,
+        timestamp: new Date().toISOString()
+      };
+
+      setDebugInfo(JSON.stringify(debugResult, null, 2));
+      console.log('Health check result:', debugResult);
+    } catch (error) {
+      const errorInfo = {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      };
+      setDebugInfo(JSON.stringify(errorInfo, null, 2));
+      console.error('Health check error:', error);
+    } finally {
+      setDebugLoading(false);
     }
   };
 
@@ -350,6 +408,29 @@ export default function AdminDashboard() {
               Logout
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Debug Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-medium text-yellow-800">API Debug Tools</h3>
+            <button
+              onClick={testHealthCheck}
+              disabled={debugLoading}
+              className="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 disabled:opacity-50"
+            >
+              {debugLoading ? 'Testing...' : 'Test API Health'}
+            </button>
+          </div>
+          {debugInfo && (
+            <div className="mt-2">
+              <pre className="text-xs bg-white p-2 rounded border overflow-auto max-h-40">
+                {debugInfo}
+              </pre>
+            </div>
+          )}
         </div>
       </div>
 
