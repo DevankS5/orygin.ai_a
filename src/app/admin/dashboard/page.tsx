@@ -74,10 +74,6 @@ export default function AdminDashboard() {
   const [documentError, setDocumentError] = useState<string | null>(null);
   const [documentSuccess, setDocumentSuccess] = useState<string | null>(null);
 
-  // Debug state
-  const [debugInfo, setDebugInfo] = useState<string | null>(null);
-  const [debugLoading, setDebugLoading] = useState(false);
-
   // Check authentication on component mount
   useEffect(() => {
     checkAuthentication();
@@ -139,7 +135,6 @@ export default function AdminDashboard() {
     try {
       setInvitesLoading(true);
       setInviteError('');
-      console.log('Fetching invites...');
       
       const response = await fetch('/api/admin/invites', {
         method: 'GET',
@@ -148,24 +143,17 @@ export default function AdminDashboard() {
         },
         cache: 'no-store'
       });
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Response error text:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('Response data:', data);
       
       if (data.success) {
         setInvites(data.invites);
-        console.log('Successfully set invites:', data.invites);
       } else {
         console.error('Failed to fetch invites:', data.error);
-        console.error('Error details:', data.details);
         setInviteError(`Failed to fetch invites: ${data.details || data.error}`);
       }
     } catch (error) {
@@ -199,74 +187,6 @@ export default function AdminDashboard() {
       setDocuments([]);
     } finally {
       setDocumentsLoading(false);
-    }
-  };
-
-  const testHealthCheck = async () => {
-    try {
-      setDebugLoading(true);
-      setDebugInfo('Testing API health...');
-      
-      // Test simple API first
-      const testResponse = await fetch('/api/test', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        cache: 'no-store'
-      });
-
-      const testText = await testResponse.text();
-      let testData;
-      try {
-        testData = JSON.parse(testText);
-      } catch {
-        testData = { rawResponse: testText };
-      }
-
-      // Then test health endpoint
-      const response = await fetch('/api/health', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        cache: 'no-store'
-      });
-
-      const responseText = await response.text();
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch {
-        data = { rawResponse: responseText };
-      }
-
-      const debugResult = {
-        testEndpoint: {
-          status: testResponse.status,
-          statusText: testResponse.statusText,
-          data: testData
-        },
-        healthEndpoint: {
-          status: response.status,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
-          data
-        },
-        timestamp: new Date().toISOString()
-      };
-
-      setDebugInfo(JSON.stringify(debugResult, null, 2));
-      console.log('API test result:', debugResult);
-    } catch (error) {
-      const errorInfo = {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
-      };
-      setDebugInfo(JSON.stringify(errorInfo, null, 2));
-      console.error('API test error:', error);
-    } finally {
-      setDebugLoading(false);
     }
   };
 
@@ -433,29 +353,6 @@ export default function AdminDashboard() {
               Logout
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* Debug Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-medium text-yellow-800">API Debug Tools</h3>
-            <button
-              onClick={testHealthCheck}
-              disabled={debugLoading}
-              className="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 disabled:opacity-50"
-            >
-              {debugLoading ? 'Testing APIs...' : 'Test API Routes'}
-            </button>
-          </div>
-          {debugInfo && (
-            <div className="mt-2">
-              <pre className="text-xs bg-white p-2 rounded border overflow-auto max-h-40">
-                {debugInfo}
-              </pre>
-            </div>
-          )}
         </div>
       </div>
 
