@@ -12,5 +12,5 @@ export async function GET() {
   });
 
   // Redirect to the login page
-  return NextResponse.redirect(new URL('/admin/login', 'http://localhost:3001')); // Replace with your actual domain in production
+  return NextResponse.redirect(new URL('/admin/login', 'https://orygin.io/'));
 }
