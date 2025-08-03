@@ -7,6 +7,10 @@
   NPM_VERSION = "10.8.1"
   SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SUPABASE_URL"
 
+# Function settings for API routes
+[functions]
+  node_bundler = "esbuild"
+  
 # Enable Next.js plugin
 [[plugins]]
   package = "@netlify/plugin-nextjs"

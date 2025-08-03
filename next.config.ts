@@ -9,7 +9,11 @@ const nextConfig: NextConfig = {
   },
   devIndicators: false,
   // Ensure proper output for Netlify deployment
-  output: 'standalone'
+  output: 'standalone',
+  // Configure for serverless functions
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/supabase-js'],
+  },
 };
 
 export default nextConfig;
