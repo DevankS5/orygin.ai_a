@@ -207,6 +207,24 @@ export default function AdminDashboard() {
       setDebugLoading(true);
       setDebugInfo('Testing API health...');
       
+      // Test simple API first
+      const testResponse = await fetch('/api/test', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+      });
+
+      const testText = await testResponse.text();
+      let testData;
+      try {
+        testData = JSON.parse(testText);
+      } catch {
+        testData = { rawResponse: testText };
+      }
+
+      // Then test health endpoint
       const response = await fetch('/api/health', {
         method: 'GET',
         headers: {
@@ -224,22 +242,29 @@ export default function AdminDashboard() {
       }
 
       const debugResult = {
-        status: response.status,
-        statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
-        data,
+        testEndpoint: {
+          status: testResponse.status,
+          statusText: testResponse.statusText,
+          data: testData
+        },
+        healthEndpoint: {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          data
+        },
         timestamp: new Date().toISOString()
       };
 
       setDebugInfo(JSON.stringify(debugResult, null, 2));
-      console.log('Health check result:', debugResult);
+      console.log('API test result:', debugResult);
     } catch (error) {
       const errorInfo = {
         error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString()
       };
       setDebugInfo(JSON.stringify(errorInfo, null, 2));
-      console.error('Health check error:', error);
+      console.error('API test error:', error);
     } finally {
       setDebugLoading(false);
     }
@@ -421,7 +446,7 @@ export default function AdminDashboard() {
               disabled={debugLoading}
               className="bg-yellow-600 text-white px-3 py-1 rounded text-sm hover:bg-yellow-700 disabled:opacity-50"
             >
-              {debugLoading ? 'Testing...' : 'Test API Health'}
+              {debugLoading ? 'Testing APIs...' : 'Test API Routes'}
             </button>
           </div>
           {debugInfo && (

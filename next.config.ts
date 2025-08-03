@@ -8,9 +8,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   devIndicators: false,
-  // Ensure proper output for Netlify deployment
-  output: 'standalone',
-  // Configure for serverless functions
+  // Remove standalone output for Netlify - let the plugin handle it
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
   },

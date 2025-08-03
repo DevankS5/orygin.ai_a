@@ -3,9 +3,6 @@ import { NextResponse } from 'next/server';
 // This forces the route to be dynamic and prevents caching on the server.
 export const dynamic = 'force-dynamic';
 
-// Set runtime for Netlify compatibility
-export const runtime = 'nodejs';
-
 export async function GET() {
   try {
     const timestamp = new Date().toISOString();
