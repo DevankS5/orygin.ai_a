@@ -3,7 +3,7 @@
   command = "npm run build"
 
 [build.environment]
-  NODE_VERSION = "18.20.4"
+  NODE_VERSION = "20.18.0"
   NPM_VERSION = "10.8.1"
 
 # Enable Next.js plugin

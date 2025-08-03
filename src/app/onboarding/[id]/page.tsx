@@ -48,7 +48,7 @@ export default async function OnboardingPage({ params }: Props) {
             </p>
           </div>
           <div className="text-sm text-gray-400 bg-gray-700/30 rounded-xl p-4">
-            <span className="font-medium">Completed on:</span> {new Date(invite.created_at).toLocaleDateString()}
+            <span className="font-medium">Completed on:</span> {invite.created_at ? new Date(invite.created_at).toLocaleDateString() : 'Recently'}
           </div>
         </div>
       </div>
