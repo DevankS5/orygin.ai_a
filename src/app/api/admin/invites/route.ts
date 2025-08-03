@@ -1,83 +1,36 @@
 import { createClient } from '@supabase/supabase-js';
-import { createServerClient } from '@supabase/ssr';
-import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+// This forces the route to be dynamic, preventing caching issues.
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
   try {
-    // Authentication check
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          },
-        },
-      }
-    );
+    // Ensure environment variables are loaded
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    const { data: { session }, error: authError } = await supabase.auth.getSession();
-
-    if (authError || !session) {
-      console.error('Authentication failed:', authError);
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized access' },
-        { status: 401 }
-      );
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Supabase URL or Service Role Key is not configured.');
     }
 
-    // Create Supabase client with service role for admin operations
-    const adminSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    // Create a server-side client with the service_role key
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Attempting to fetch invites from orientation_invites table...');
-
-    // Fetch all records from the orientation_invites table
-    const { data: invites, error } = await adminSupabase
+    // Fetch all invites
+    const { data, error } = await supabase
       .from('orientation_invites')
-      .select('id, name, email, status, created_at')
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Supabase error details:', error);
-      return NextResponse.json(
-        { 
-          success: false,
-          error: 'Failed to fetch invites', 
-          details: error.message,
-          code: error.code 
-        },
-        { status: 500 }
-      );
+      // Throw the error to be caught by the catch block
+      throw error;
     }
 
-    console.log(`Successfully fetched ${invites?.length || 0} invites`);
-
-    // Return the list of invites as a JSON array
-    return NextResponse.json({
-      success: true,
-      invites: invites || []
-    }, { status: 200 });
-
-  } catch (error) {
-    console.error('Unexpected error:', error);
-    return NextResponse.json(
-      { 
-        success: false,
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    return NextResponse.json(data);
+  } catch (error: any) {
+    console.error('Error fetching invites:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
