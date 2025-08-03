@@ -7,9 +7,9 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  devIndicators: false
+  devIndicators: false,
+  // Ensure proper output for Netlify deployment
+  output: 'standalone'
 };
-
-
 
 export default nextConfig;
