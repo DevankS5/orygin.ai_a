@@ -28,12 +28,19 @@ export async function GET() {
       throw error;
     }
 
-    // Return the data successfully
-    return NextResponse.json(data);
+    // Return the data successfully with the expected format
+    return NextResponse.json({
+      success: true,
+      invites: data || []
+    });
   } catch (error: any) {
     // Log any errors to the server console for debugging
     console.error('Error fetching invites:', error);
-    // Return a generic error response to the client
-    return NextResponse.json({ error: 'Failed to fetch invites.', details: error.message }, { status: 500 });
+    // Return a consistent error response to the client
+    return NextResponse.json({ 
+      success: false,
+      error: 'Failed to fetch invites.', 
+      details: error.message 
+    }, { status: 500 });
   }
 }

@@ -139,6 +139,10 @@ export default function AdminDashboard() {
       const response = await fetch('/api/admin/invites');
       console.log('Response status:', response.status);
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       console.log('Response data:', data);
       
@@ -162,6 +166,11 @@ export default function AdminDashboard() {
     try {
       setDocumentsLoading(true);
       const response = await fetch(`/api/admin/documents/${inviteId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       
       if (data.success) {
